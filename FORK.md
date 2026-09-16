@@ -21,8 +21,9 @@ same branch over time.
     falling back to `/etc/xdg/quickshell/caelestia` (the AUR package's copy), so this symlink
     takes priority without needing to uninstall the package — the package still provides the
     native Qt plugin, `caelestia-cli`, and dependencies.
--   `~/.config/caelestia/shell.json` is untouched by any of this; it's read independently of
-    where the QML source lives.
+-   `~/.config/caelestia/shell.json` and `~/.config/caelestia/shell-tokens.json` are read
+    independently of where the QML source lives, but **this fork does rely on specific values
+    in them** — see "Local config not tracked by git" below.
 
 ## Reproducing this setup from scratch
 
@@ -58,6 +59,41 @@ git checkout custom
 git rebase main                                  # resolve conflicts, likely in modules/bar/*
 qs -c caelestia kill && caelestia shell -d       # full reload after structural changes
 ```
+
+## Local config not tracked by git
+
+None of this repo's changes touch `plugin/`, so several things this fork relies on live in
+plain user config files instead. Those files live outside this repo's tree (some aren't in any
+git repo at all on this machine), so they wouldn't normally survive a reinstall — **backup
+copies are kept in [`fork-config/`](fork-config/)** in this repo, alongside notes on what each
+value does and where the real, live file actually lives. If you change one of the real files,
+copy it back into `fork-config/` and commit, so the backup doesn't drift.
+
+**[`fork-config/shell.json`](fork-config/shell.json)** → real file: `~/.config/caelestia/shell.json`
+(native `Config`, not part of this repo). Notable values:
+- `bar.entries` — **required** for the wallpaper-cycle button to appear at all (see above);
+  `bar.entries` replaces the whole list, this is the full array with `wallpaperCycle` added.
+- `bar.popouts.activeWindow: false` — avoids clashing with the Dashboard's hover popup.
+- `border.thickness: 9` — the shell's own border/margin accent, reduced ~10% from the default
+  `10`. (The much more visible gap around windows is a *separate*, non-shell setting — see
+  `fork-config/hypr-variables.lua` below.)
+
+**[`fork-config/shell-tokens.json`](fork-config/shell-tokens.json)** → real file:
+`~/.config/caelestia/shell-tokens.json` (native `Tokens`, not part of this repo).
+- `sizes.bar.innerWidth: 20` — controls the bar's thickness (default `40`). All the proportional
+  icon/font sizing described below is written against this value, so changing it further should
+  reflow cleanly, but very small values may need those ratios re-tuned.
+
+**[`fork-config/hypr-variables.lua`](fork-config/hypr-variables.lua)** → real file:
+`~/.config/hypr/variables.lua` (separate Hyprland dots config, not this shell at all —
+`~/.config/hypr` isn't a git repo on this machine, so this is its only version history).
+Notable values (see the file for the full list — everything else is upstream default):
+```lua
+windowGapsIn        = 5,
+windowGapsOut       = 5,   -- was 10
+singleWindowGapsOut = 10,  -- was 20 (extra outer gap when only one window is open)
+```
+Apply with `hyprctl reload` after editing (no shell restart needed, this is Hyprland-side).
 
 ## What's changed vs upstream
 
