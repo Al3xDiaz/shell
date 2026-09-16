@@ -44,7 +44,7 @@ StyledRect {
     radius: Tokens.rounding.full
 
     clip: true
-    implicitHeight: Tokens.sizes.bar.innerWidth
+    implicitHeight: (Tokens.sizes.bar.innerWidth * 1.2)
     implicitWidth: iconColumn.implicitWidth + Tokens.padding.medium * 2
 
     RowLayout {
@@ -85,7 +85,7 @@ StyledRect {
                             animate: true
                             text: Icons.getVolumeIcon(Audio.volume, Audio.muted)
                             color: root.colour
-                            fontStyle: Tokens.font.icon.size(Math.max(11, Math.round(Tokens.sizes.bar.innerWidth * 0.55))).build()
+                            fontStyle: Tokens.font.icon.size(Math.max(9, Math.round((Tokens.sizes.bar.innerWidth * 1.2) * 0.55))).build()
                             fill: 1
                         }
                     }
@@ -100,7 +100,7 @@ StyledRect {
                             animate: true
                             text: Icons.getMicVolumeIcon(Audio.sourceVolume, Audio.sourceMuted)
                             color: root.colour
-                            fontStyle: Tokens.font.icon.size(Math.max(11, Math.round(Tokens.sizes.bar.innerWidth * 0.55))).build()
+                            fontStyle: Tokens.font.icon.size(Math.max(9, Math.round((Tokens.sizes.bar.innerWidth * 1.2) * 0.55))).build()
                             fill: 1
                         }
                     }
@@ -112,7 +112,7 @@ StyledRect {
                             animate: true
                             text: Hypr.kbLayout
                             color: root.colour
-                            font: Tokens.font.mono.builders.medium.size(Math.max(9, Math.round(Tokens.sizes.bar.innerWidth * 0.4))).build()
+                            font: Tokens.font.mono.builders.medium.size(Math.max(8, Math.round((Tokens.sizes.bar.innerWidth * 1.2) * 0.67))).build()
                         }
                     }
                 }
@@ -123,7 +123,7 @@ StyledRect {
                             animate: true
                             text: Nmcli.activeEthernet ? "cable" : Nmcli.active ? Icons.getNetworkIcon(Nmcli.active.strength ?? 0) : "wifi_off"
                             color: root.colour
-                            fontStyle: Tokens.font.icon.size(Math.max(11, Math.round(Tokens.sizes.bar.innerWidth * 0.55))).build()
+                            fontStyle: Tokens.font.icon.size(Math.max(9, Math.round((Tokens.sizes.bar.innerWidth * 1.2) * 0.55))).build()
                         }
                     }
                 }

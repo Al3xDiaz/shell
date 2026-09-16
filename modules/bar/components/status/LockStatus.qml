@@ -7,7 +7,7 @@ import qs.services
 RowLayout {
     id: root
 
-    readonly property var iconFontStyle: Tokens.font.icon.size(Math.max(11, Math.round(Tokens.sizes.bar.innerWidth * 0.55))).build()
+    readonly property var iconFontStyle: Tokens.font.icon.size(Math.max(9, Math.round((Tokens.sizes.bar.innerWidth * 1.2) * 0.55))).build()
 
     required property color colour
     required property int parentSpacing

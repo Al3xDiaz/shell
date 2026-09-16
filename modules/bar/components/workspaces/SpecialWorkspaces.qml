@@ -289,7 +289,7 @@ Item {
             asynchronous: true
 
             Layout.alignment: Qt.AlignVCenter | Qt.AlignLeft
-            Layout.preferredWidth: Tokens.sizes.bar.innerWidth - Tokens.padding.small
+            Layout.preferredWidth: (Tokens.sizes.bar.innerWidth * 1.6) - Tokens.padding.small
 
             sourceComponent: ws.icon.length === 1 ? letterComp : iconComp
 
@@ -365,7 +365,7 @@ Item {
                         grade: 0
                         text: Icons.getAppCategoryIcon(modelData.lastIpcObject.class, "terminal")
                         color: Colours.palette.m3onSurfaceVariant
-                        fontStyle: Tokens.font.icon.size(Math.max(6, Math.round(Tokens.sizes.bar.innerWidth * 0.3))).build()
+                        fontStyle: Tokens.font.icon.size(Math.max(5, Math.round((Tokens.sizes.bar.innerWidth * 1.6) * 0.3))).build()
                     }
                 }
             }

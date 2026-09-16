@@ -11,7 +11,7 @@ StyledRect {
 
     readonly property color colour: Colours.palette.m3tertiary
     readonly property int padding: Config.bar.clock.background ? Tokens.padding.medium : Tokens.padding.extraSmall
-    readonly property int baseFontSize: Math.max(8, Math.round(Tokens.sizes.bar.innerWidth * 0.36))
+    readonly property int baseFontSize: Math.max(8, Math.round(Tokens.sizes.bar.innerWidth * 0.6))
     readonly property var font: Tokens.font.body.builders.small.size(root.baseFontSize)
 
     implicitHeight: Tokens.sizes.bar.innerWidth
@@ -35,7 +35,7 @@ StyledRect {
             sourceComponent: MaterialIcon {
                 text: "calendar_month"
                 color: root.colour
-                fontStyle: Tokens.font.icon.size(Math.max(11, Math.round(Tokens.sizes.bar.innerWidth * 0.55))).build()
+                fontStyle: Tokens.font.icon.size(Math.max(9, Math.round(Tokens.sizes.bar.innerWidth * 0.55))).build()
             }
         }
 

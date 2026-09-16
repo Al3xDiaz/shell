@@ -33,7 +33,7 @@ RowLayout {
         id: indicator
 
         Layout.alignment: Qt.AlignVCenter | Qt.AlignLeft
-        Layout.preferredWidth: Tokens.sizes.bar.innerWidth - Tokens.padding.small
+        Layout.preferredWidth: (Tokens.sizes.bar.innerWidth * 1.6) - Tokens.padding.small
 
         animate: true
         text: {
@@ -54,7 +54,7 @@ RowLayout {
         horizontalAlignment: Qt.AlignHCenter
         verticalAlignment: Qt.AlignVCenter
         font.family: Tokens.font.workspaces
-        font.pointSize: Math.max(6, Math.round(Tokens.sizes.bar.innerWidth * 0.4))
+        font.pointSize: Math.max(6, Math.round((Tokens.sizes.bar.innerWidth * 1.6) * 0.4))
     }
 
     Loader {
@@ -64,7 +64,7 @@ RowLayout {
 
         Layout.alignment: Qt.AlignVCenter
         Layout.fillWidth: true
-        Layout.leftMargin: -Tokens.sizes.bar.innerWidth / 10
+        Layout.leftMargin: -(Tokens.sizes.bar.innerWidth * 1.6) / 10
 
         visible: active
         active: root.hasWindows
@@ -108,7 +108,7 @@ RowLayout {
                     grade: 0
                     text: Icons.getAppCategoryIcon(modelData.lastIpcObject.class, "terminal")
                     color: Colours.palette.m3onSurfaceVariant
-                    fontStyle: Tokens.font.icon.size(Math.max(6, Math.round(Tokens.sizes.bar.innerWidth * 0.3))).build()
+                    fontStyle: Tokens.font.icon.size(Math.max(5, Math.round((Tokens.sizes.bar.innerWidth * 1.6) * 0.3))).build()
                 }
             }
         }

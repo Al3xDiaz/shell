@@ -80,9 +80,9 @@ copy it back into `fork-config/` and commit, so the backup doesn't drift.
 
 **[`fork-config/shell-tokens.json`](fork-config/shell-tokens.json)** → real file:
 `~/.config/caelestia/shell-tokens.json` (native `Tokens`, not part of this repo).
-- `sizes.bar.innerWidth: 20` — controls the bar's thickness (default `40`). All the proportional
-  icon/font sizing described below is written against this value, so changing it further should
-  reflow cleanly, but very small values may need those ratios re-tuned.
+- `sizes.bar.innerWidth: 16` — controls the bar's thickness (default `40`). All the proportional
+  icon/font sizing described in "Bar sizing" below is written against this value, so changing it
+  further should reflow cleanly, but very small values may need those ratios re-tuned.
 
 **[`fork-config/hypr-variables.lua`](fork-config/hypr-variables.lua)** → real file:
 `~/.config/hypr/variables.lua` (separate Hyprland dots config, not this shell at all —
@@ -121,5 +121,27 @@ Apply with `hyprctl reload` after editing (no shell restart needed, this is Hypr
         added wherever you want the button.
     -   `WallpaperCycle` is force-loaded in `modules/ServiceLoader.qml` so the timer runs even if
         the Nexus page is never opened.
+-   **Bar sizing**: the bar was shrunk from the default thickness (`sizes.bar.innerWidth: 40`) to
+    `16` (see `fork-config/shell-tokens.json`). Several bar sub-components had fixed font/icon
+    sizes left over from the horizontal-bar refactor, which clipped or looked disproportionate
+    once the bar got much thinner. They were changed to scale off `Tokens.sizes.bar.innerWidth`
+    instead, each with its own ratio and a floor (`Math.max(floor, Math.round(innerWidth * ratio))`)
+    so they keep shrinking gracefully if `innerWidth` is reduced further, without going illegibly
+    small. Current ratios, tuned by eye against `innerWidth: 16`:
+    - **General text** (Clock hour:minute/date, ActiveWindow title): `innerWidth * 0.6`
+      (`baseFontSize` in `Clock.qml` / `ActiveWindow.qml`).
+    - **kbLayout status text**: `innerWidth * 0.67` (`StatusIcons.qml`).
+    - **Most icon glyphs** (status icons, tray, lock/bluetooth/battery, calendar): `innerWidth * 0.55`.
+    - **ActiveWindow's app-category icon**: `innerWidth * 0.72` — deliberately bigger than the
+      general icon ratio, kept independent of the title's text size.
+    - **Workspace per-window icons**: `innerWidth * 0.3` — deliberately smaller/secondary
+      relative to the main workspace indicator text (`innerWidth * 0.4`).
+    - **Whole widgets scaled independently of the bar's own thickness**, so they read as
+      distinct from the bar rather than blending in: the **workspaces box** (`Workspaces.qml`
+      and everything under `modules/bar/components/workspaces/`) uses `innerWidth * 1.6` instead
+      of `innerWidth` directly; the **status-icons box** (`StatusIcons.qml` + `status/*.qml`)
+      uses `innerWidth * 1.2`. These multipliers are inlined at every `Tokens.sizes.bar.innerWidth`
+      reference in those files rather than introduced as a new token, to keep the diff small —
+      if `innerWidth` itself changes, these should still scale proportionally alongside it.
 
 See `git log main..custom` for the full diff against the version this branch is based on.

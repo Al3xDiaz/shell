@@ -65,7 +65,7 @@ Item {
             anchors.verticalCenter: root.verticalCenter
 
             x: (start?.x ?? 0) - 1
-            implicitHeight: Tokens.sizes.bar.innerWidth - Tokens.padding.small + 2
+            implicitHeight: (Tokens.sizes.bar.innerWidth * 1.6) - Tokens.padding.small + 2
             implicitWidth: start && end ? end.x + end.size - start.x + 2 : 0
 
             color: Colours.layer(Colours.palette.m3surfaceContainerHigh, 2)

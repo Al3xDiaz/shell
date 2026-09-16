@@ -8,7 +8,7 @@ import qs.utils
 MaterialIcon {
     required property color colour
 
-    fontStyle: Tokens.font.icon.size(Math.max(11, Math.round(Tokens.sizes.bar.innerWidth * 0.55))).build()
+    fontStyle: Tokens.font.icon.size(Math.max(9, Math.round((Tokens.sizes.bar.innerWidth * 1.2) * 0.55))).build()
 
     animate: true
     text: {
