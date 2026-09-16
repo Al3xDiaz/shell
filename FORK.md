@@ -121,7 +121,17 @@ Apply with `hyprctl reload` after editing (no shell restart needed, this is Hypr
         added wherever you want the button.
     -   `WallpaperCycle` is force-loaded in `modules/ServiceLoader.qml` so the timer runs even if
         the Nexus page is never opened.
--   **Bar sizing**: the bar was shrunk from the default thickness (`sizes.bar.innerWidth: 40`) to
+-   **Bar sizing**: all pixel values and ratios below were tuned by eye against this specific
+    monitor setup — **AOC 27G2G4, 1920x1080@60Hz, 27" (600x340mm), Hyprland `scale: 1` (no
+    fractional scaling), single monitor** (`hyprctl monitors` to re-check). On a different
+    resolution/physical size/scale, these will likely look wrong (too big/small relative to
+    everything else) and need re-tuning by eye again — there's no DPI-aware scaling here, every
+    number is an absolute pixel value or a ratio of `sizes.bar.innerWidth`, which is itself an
+    absolute pixel value. If you change monitors, start by adjusting `innerWidth` in
+    `shell-tokens.json` to roughly match the old bar's on-screen size, then revisit the
+    multipliers below the same way (ask for a visual check, adjust, repeat).
+
+    The bar was shrunk from the default thickness (`sizes.bar.innerWidth: 40`) to
     `16` (see `fork-config/shell-tokens.json`). Several bar sub-components had fixed font/icon
     sizes left over from the horizontal-bar refactor, which clipped or looked disproportionate
     once the bar got much thinner. They were changed to scale off `Tokens.sizes.bar.innerWidth`
