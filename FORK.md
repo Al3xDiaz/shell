@@ -1,12 +1,14 @@
 # This fork
 
 This is a personal fork of [`caelestia-dots/shell`](https://github.com/caelestia-dots/shell)
-used to customize the bar (moved from a vertical strip on the left to a horizontal bar across
-the top of the screen) without losing those changes on upstream/package updates.
+used to make ongoing personal customizations to the shell without losing those changes on
+upstream/package updates. The first change was moving the bar from a vertical strip on the
+left to a horizontal bar across the top of the screen; more customizations will land on the
+same branch over time.
 
 ## Where everything lives
 
--   **Local checkout:** `~/.local/share/caelestia-shell`, branch `bar-customizations`
+-   **Local checkout:** `~/.local/share/caelestia-shell`, branch `custom`
     (branched off tag `v2.3.0` to match the installed `caelestia-shell` AUR package version).
 -   **Remotes** (configured on `origin`):
     -   Fetch: `github.com/Al3xDiaz/shell`
@@ -29,7 +31,7 @@ gh repo fork caelestia-dots/shell --clone
 git clone https://github.com/<you>/shell.git ~/.local/share/caelestia-shell
 cd ~/.local/share/caelestia-shell
 git remote add upstream https://github.com/caelestia-dots/shell.git
-git checkout -b bar-customizations v2.3.0   # match your installed package version
+git checkout -b custom v2.3.0   # match your installed package version
 
 mkdir -p ~/.config/quickshell
 ln -s ~/.local/share/caelestia-shell ~/.config/quickshell/caelestia
@@ -52,7 +54,7 @@ git remote set-url --add --push origin git@gitlab.com:<you>/shell.git
 cd ~/.local/share/caelestia-shell
 git fetch upstream
 git checkout main && git merge upstream/main     # fast-forward, no local commits on main
-git checkout bar-customizations
+git checkout custom
 git rebase main                                  # resolve conflicts, likely in modules/bar/*
 qs -c caelestia kill && caelestia shell -d       # full reload after structural changes
 ```
@@ -66,5 +68,4 @@ qs -c caelestia kill && caelestia shell -d       # full reload after structural 
 -   The active-window hover popout is disabled by default (`bar.popouts.activeWindow: false` in
     `shell.json`) since it would otherwise clash with the Dashboard's top-center hover popup.
 
-See `git log main..bar-customizations` for the full diff against the version this branch is
-based on.
+See `git log main..custom` for the full diff against the version this branch is based on.
