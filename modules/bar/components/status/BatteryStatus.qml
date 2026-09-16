@@ -1,11 +1,14 @@
 import QtQuick
 import Quickshell.Services.UPower
+import Caelestia.Config
 import qs.components
 import qs.services
 import qs.utils
 
 MaterialIcon {
     required property color colour
+
+    fontStyle: Tokens.font.icon.size(Math.max(11, Math.round(Tokens.sizes.bar.innerWidth * 0.55))).build()
 
     animate: true
     text: {

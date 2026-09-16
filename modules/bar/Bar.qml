@@ -180,6 +180,14 @@ RowLayout {
                     }
                 }
             }
+            DelegateChoice {
+                roleValue: "wallpaperCycle"
+                delegate: EntryWrapper {
+                    WallpaperButton {
+                        objectName: "taskbarWallpaperButton"
+                    }
+                }
+            }
         }
     }
 

@@ -67,5 +67,23 @@ qs -c caelestia kill && caelestia shell -d       # full reload after structural 
 -   Hover popouts (status icons, tray) repositioned to work against a horizontal bar.
 -   The active-window hover popout is disabled by default (`bar.popouts.activeWindow: false` in
     `shell.json`) since it would otherwise clash with the Dashboard's top-center hover popup.
+-   **Wallpaper folder cycling**: new `services/WallpaperCycle.qml` singleton cycles through the
+    images in a folder, either on a timer or manually. Since this repo's config is entirely
+    native (C++, `plugin/`) and this fork avoids rebuilding that plugin, its own settings
+    (folder, interval, shuffle, enabled) live in a separate file:
+    `~/.local/state/caelestia/wallpaper-cycle.json` — not in `shell.json`. Configure it via
+    Nexus (Wallpaper page → "Auto cycle" section) rather than hand-editing that file.
+    -   New bar button: `modules/bar/components/WallpaperButton.qml`, wired in `Bar.qml` as
+        entry id `wallpaperCycle`. Left click or scroll up = next, scroll down = previous,
+        right click toggles auto-cycle. An in-memory back/forward history (not persisted
+        across restarts) makes "previous" actually go back to what was shown before, even
+        in `shuffle` mode.
+    -   **Requires** adding `wallpaperCycle` to `bar.entries` in `~/.config/caelestia/shell.json`
+        for the button to show up — `bar.entries` replaces the whole list, so paste the full
+        array (see the example in the upstream README's "Example configuration" section, or the
+        one already applied on this machine) with `{"id": "wallpaperCycle", "enabled": true}`
+        added wherever you want the button.
+    -   `WallpaperCycle` is force-loaded in `modules/ServiceLoader.qml` so the timer runs even if
+        the Nexus page is never opened.
 
 See `git log main..custom` for the full diff against the version this branch is based on.

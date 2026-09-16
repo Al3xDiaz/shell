@@ -12,6 +12,7 @@ Item {
     required property var bar
     required property Brightness.Monitor monitor
     property color colour: Colours.palette.m3primary
+    readonly property int baseFontSize: Math.max(8, Math.round(Tokens.sizes.bar.innerWidth * 0.36))
 
     readonly property string windowTitle: {
         const title = Hypr.activeToplevel?.title;
@@ -74,6 +75,7 @@ Item {
         animate: true
         text: Icons.getAppCategoryIcon(Hypr.activeToplevel?.lastIpcObject.class, "desktop_windows")
         color: root.colour
+        fontStyle: Tokens.font.icon.size(Math.max(11, Math.round(Tokens.sizes.bar.innerWidth * 0.55))).build()
     }
 
     Title {
@@ -88,7 +90,7 @@ Item {
         id: metrics
 
         text: root.windowTitle
-        font: root.Tokens.font.body.builders.small.letterSpacing(1.4).build()
+        font: root.Tokens.font.body.builders.small.size(root.baseFontSize).letterSpacing(1.4).build()
         elide: Qt.ElideRight
         elideWidth: root.maxWidth - icon.width
 

@@ -1,10 +1,13 @@
 import QtQuick
 import QtQuick.Layouts
+import Caelestia.Config
 import qs.components
 import qs.services
 
 RowLayout {
     id: root
+
+    readonly property var iconFontStyle: Tokens.font.icon.size(Math.max(11, Math.round(Tokens.sizes.bar.innerWidth * 0.55))).build()
 
     required property color colour
     required property int parentSpacing
@@ -49,6 +52,7 @@ RowLayout {
             color: root.colour
             fill: 1
             grade: 25
+            fontStyle: root.iconFontStyle
 
             Behavior on opacity {
                 Anim {
@@ -78,6 +82,7 @@ RowLayout {
             color: root.colour
             fill: 1
             grade: 25
+            fontStyle: root.iconFontStyle
 
             Behavior on opacity {
                 Anim {

@@ -38,6 +38,7 @@ Item {
                 return "bluetooth";
             }
             color: root.colour
+            fontStyle: Tokens.font.icon.size(Math.max(11, Math.round(Tokens.sizes.bar.innerWidth * 0.55))).build()
         }
 
         // Connected bluetooth devices
@@ -55,6 +56,7 @@ Item {
                 text: Icons.getBluetoothIcon(modelData?.icon)
                 color: root.colour
                 fill: 1
+                fontStyle: Tokens.font.icon.size(Math.max(11, Math.round(Tokens.sizes.bar.innerWidth * 0.55))).build()
 
                 SequentialAnimation on opacity {
                     running: device.modelData?.state !== BluetoothDeviceState.Connected // qmllint disable unresolved-type

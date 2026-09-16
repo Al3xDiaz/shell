@@ -365,6 +365,7 @@ Item {
                         grade: 0
                         text: Icons.getAppCategoryIcon(modelData.lastIpcObject.class, "terminal")
                         color: Colours.palette.m3onSurfaceVariant
+                        fontStyle: Tokens.font.icon.size(Math.max(6, Math.round(Tokens.sizes.bar.innerWidth * 0.3))).build()
                     }
                 }
             }

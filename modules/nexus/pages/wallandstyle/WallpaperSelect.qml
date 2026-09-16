@@ -184,5 +184,44 @@ PageBase {
                 }
             }
         }
+
+        SectionHeader {
+            Layout.topMargin: Tokens.spacing.large
+            text: qsTr("Auto cycle")
+        }
+
+        ToggleRow {
+            first: true
+            text: qsTr("Cycle wallpaper automatically")
+            subtext: qsTr("Change the wallpaper on a timer, using the folder below")
+            checked: WallpaperCycle.enabled
+            onToggled: WallpaperCycle.enabled = checked
+        }
+
+        StepperRow {
+            label: qsTr("Interval (minutes)")
+            subtext: qsTr("How often the wallpaper changes automatically")
+            value: WallpaperCycle.intervalMs / 60000
+            from: 1
+            to: 1440
+            stepSize: 1
+            onMoved: v => WallpaperCycle.intervalMs = Math.round(v * 60000)
+        }
+
+        TextFieldRow {
+            label: qsTr("Folder")
+            subtext: qsTr("Folder to cycle wallpapers from")
+            placeholderText: Paths.shortenHome(Paths.wallsdir)
+            value: WallpaperCycle.folder
+            onEditingFinished: v => WallpaperCycle.folder = v ? Paths.absolutePath(v) : ""
+        }
+
+        ToggleRow {
+            last: true
+            text: qsTr("Shuffle")
+            subtext: qsTr("Pick a random wallpaper instead of going in order")
+            checked: WallpaperCycle.shuffle
+            onToggled: WallpaperCycle.shuffle = checked
+        }
     }
 }
