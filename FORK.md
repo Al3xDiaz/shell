@@ -95,6 +95,48 @@ singleWindowGapsOut = 10,  -- was 20 (extra outer gap when only one window is op
 ```
 Apply with `hyprctl reload` after editing (no shell restart needed, this is Hyprland-side).
 
+**[`fork-config/hypr-vars.lua`](fork-config/hypr-vars.lua)** → real file:
+`~/.config/caelestia/hypr-vars.lua` (user overrides read by the caelestia Hyprland dots).
+Sets `browser = "google-chrome-stable"` and custom keybinds (`kbTerminal`, `kbCloseWindow`,
+`kbEditor`, `kbTodoWs`, `kbLauncher`). Apply with `hyprctl reload`.
+
+**[`fork-config/foot/`](fork-config/foot/)** → real dir: `~/.config/foot/`. `foot.ini` with
+fish as shell, JetBrains Mono Nerd Font, 0.78 alpha + blur. Without it foot opens plain bash
+with no Caelestia colours/transparency/Nerd Font.
+
+**[`fork-config/fish/`](fork-config/fish/)** → real dir: `~/.config/fish/`. `config.fish`
+(starship, zoxide, direnv, eza, abbrs, loads Caelestia colour sequences from
+`~/.local/state/caelestia/sequences.txt`) and `functions/` (`fish_greeting`, `claude` wrapper
+that enables the idle inhibitor). `fish_variables` and history are machine-local and
+git-ignored on purpose.
+
+**[`fork-config/starship.toml`](fork-config/starship.toml)** → real file:
+`~/.config/starship.toml` (prompt config).
+
+## Instalar en otro usuario
+
+1. Clonar la rama `custom` en el home del nuevo usuario:
+   ```sh
+   git clone -b custom https://github.com/Al3xDiaz/shell.git ~/.local/share/caelestia-shell
+   ```
+2. Crear el symlink hacia **ese clon** (no hacia el home de otro usuario: tiene permisos 700
+   y quickshell vuelve en silencio a `/etc/xdg`):
+   ```sh
+   mkdir -p ~/.config/quickshell
+   ln -sfn ~/.local/share/caelestia-shell ~/.config/quickshell/caelestia
+   ```
+3. Copiar la config de terminal y shell, y la de caelestia/Hyprland:
+   ```sh
+   F=~/.local/share/caelestia-shell/fork-config
+   mkdir -p ~/.config/caelestia ~/.config/hypr
+   cp -r $F/foot $F/fish ~/.config/
+   cp $F/starship.toml ~/.config/
+   cp $F/shell.json $F/shell-tokens.json $F/hypr-vars.lua ~/.config/caelestia/
+   cp $F/hypr-variables.lua ~/.config/hypr/variables.lua
+   ```
+4. Opcional: `chsh -s /usr/bin/fish`.
+5. Recargar: `qs -c caelestia kill; caelestia shell -d` y `hyprctl reload`.
+
 ## What's changed vs upstream
 
 -   Bar moved from a vertical strip (left edge) to a horizontal bar across the top.

@@ -10,6 +10,7 @@ return {
     browser                    = "firefox",
     editor                     = "codium",
     fileExplorer               = "thunar",
+    steam                      = "steam",
     audioSettings              = "pwvucontrol",
 
     -- Touchpad
@@ -61,7 +62,7 @@ return {
     -- Modifier only, the actual binds will be mod + 0-9. These should be strings and not arrays.
     kbGoToWs                   = "SUPER",
     kbGoToWsGroup              = "CTRL + SUPER",
-    kbMoveWinToWs              = "SUPER + ALT",
+    kbMoveWinToWs              = "SUPER + SHIFT",
     kbMoveWinToWsGroup         = "CTRL + SUPER + ALT",
 
     -- All the following binds can be either an array of binds to bind multiple keys, or a single string.
@@ -96,7 +97,7 @@ return {
     kbCenterWindow             = "CTRL + SUPER + Backslash",
     kbNormalizeWindow          = "CTRL + SUPER + ALT + Backslash",
     kbWindowPip                = "SUPER + ALT + Backslash",
-    kbPinWindow                = "SUPER + P",
+    kbPinWindow                = "SUPER + ALT + P",
     kbWindowFullscreen         = "SUPER + F",
     kbWindowBorderedFullscreen = "SUPER + ALT + F",
     kbToggleWindowFloating     = "SUPER + ALT + Space",
@@ -105,7 +106,7 @@ return {
     -- Special workspaces toggles
     kbSpecialWs                = "SUPER + S",
     kbSystemMonitorWs          = "CTRL + SHIFT + Escape",
-    kbMusicWs                  = "SUPER + M",
+    kbMusicWs                  = "SUPER + O",
     kbCommunicationWs          = "SUPER + D",
     kbTodoWs                   = "SUPER + R",
 
@@ -114,6 +115,7 @@ return {
     kbBrowser                  = "SUPER + W",
     kbEditor                   = "SUPER + C",
     kbFileExplorer             = "SUPER + E",
+    kbSteam                    = "SUPER + P",
     kbAudioSettings            = "CTRL + ALT + V",
 
     -- Utilities
@@ -135,6 +137,7 @@ return {
     -- Misc
     kbLauncher                 = "SUPER + SUPER_L",
     kbSession                  = "CTRL + ALT + Delete",
+    kbExit                     = "SUPER + M",
     kbShowSidebar              = "SUPER + N",
     kbClearNotifs              = "CTRL + ALT + C",
     kbShowPanels               = "SUPER + K",

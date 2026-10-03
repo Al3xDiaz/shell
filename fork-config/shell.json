@@ -4,6 +4,9 @@
             "enabled": true
         }
     },
+    "background": {
+        "wallpaperEnabled": true
+    },
     "bar": {
         "activeWindow": {
             "inverted": false
@@ -61,7 +64,7 @@
                 "id": "lockStatus"
             },
             {
-                "enabled": false,
+                "enabled": true,
                 "id": "audio"
             },
             {
@@ -69,7 +72,7 @@
                 "id": "microphone"
             },
             {
-                "enabled": false,
+                "enabled": true,
                 "id": "kbLayout"
             },
             {

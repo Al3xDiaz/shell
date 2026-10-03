@@ -4,3 +4,8 @@
 build/
 .cache/
 logs
+# Local fish state (universal vars, history) - never commit
+fork-config/fish/fish_variables
+fork-config/fish/fish_history
+**/fish_variables
+**/fish_history
