@@ -1,0 +1,150 @@
+#!/usr/bin/env bash
+# hotspot - comparte internet por WiFi usando NetworkManager.
+#
+#   hotspot on       crea (si hace falta) y activa el hotspot
+#   hotspot off      lo apaga
+#   hotspot toggle   alterna
+#   hotspot status   imprime "on" u "off" (exit 0 si está encendido)
+#   hotspot info     muestra SSID, clave e IP
+#   hotspot set-password <clave>   cambia la clave (8-63 caracteres ASCII);
+#                                  si está encendido lo reinicia
+#
+# Config opcional en ~/.config/hotspot/config:
+#   SSID="MiHotspot"
+#   PASSWORD="minimo8caracteres"
+#   BAND="bg"        # bg = 2.4 GHz, a = 5 GHz
+#   IFACE="wlp3s0"   # por defecto autodetecta la primera interfaz WiFi
+
+set -euo pipefail
+
+CON_NAME="Hotspot"
+CONF_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/hotspot"
+CONF_FILE="$CONF_DIR/config"
+
+die() { echo "hotspot: $*" >&2; exit 1; }
+
+command -v nmcli >/dev/null || die "nmcli no está instalado (NetworkManager)"
+
+# --- configuración ---------------------------------------------------------
+SSID="" PASSWORD="" BAND="bg" IFACE=""
+# shellcheck disable=SC1090
+[[ -f "$CONF_FILE" ]] && source "$CONF_FILE"
+
+# Escribe el config con %q para que cualquier carácter (", $, `, espacios...)
+# sobreviva al `source`. Escritura atómica y permisos 600.
+write_config() {
+    mkdir -p "$CONF_DIR"
+    (
+        umask 077
+        {
+            printf 'SSID=%q\n' "$SSID"
+            printf 'PASSWORD=%q\n' "$PASSWORD"
+            printf 'BAND=%q\n' "$BAND"
+            printf 'IFACE=%q\n' "$IFACE"
+        } > "$CONF_FILE.tmp"
+    )
+    mv "$CONF_FILE.tmp" "$CONF_FILE"
+}
+
+ensure_config() {
+    [[ -n "$SSID" && -n "$PASSWORD" ]] && return
+    [[ -n "$SSID" ]] || SSID="${HOSTNAME:-pc}-hotspot"
+    [[ -n "$PASSWORD" ]] || PASSWORD="$(head -c 12 /dev/urandom | base64 | tr -dc 'A-Za-z0-9' | head -c 12)"
+    write_config
+    echo "hotspot: config creada en $CONF_FILE (SSID: $SSID)" >&2
+}
+
+detect_iface() {
+    [[ -n "$IFACE" ]] && return
+    IFACE="$(nmcli -t -f DEVICE,TYPE device | awk -F: '$2=="wifi"{print $1; exit}')"
+    [[ -n "$IFACE" ]] || die "no se encontró ninguna interfaz WiFi"
+}
+
+# --- estado ----------------------------------------------------------------
+is_on() {
+    nmcli -t -f NAME,TYPE connection show --active 2>/dev/null \
+        | grep -qx "$CON_NAME:802-11-wireless"
+}
+
+profile_exists() {
+    nmcli -t -f NAME connection show | grep -qx "$CON_NAME"
+}
+
+# --- acciones --------------------------------------------------------------
+do_on() {
+    if is_on; then echo "hotspot: ya estaba encendido"; return; fi
+
+    # NetworkManager necesita dnsmasq para el modo "shared" (DHCP/DNS)
+    command -v dnsmasq >/dev/null \
+        || die "falta dnsmasq (sudo pacman -S dnsmasq); sin él los clientes no reciben IP"
+
+    ensure_config
+    detect_iface
+
+    # WiFi apagado por software (rfkill / radio de NM)
+    rfkill unblock wifi 2>/dev/null || true
+    nmcli radio wifi on
+
+    # Recrear el perfil siempre, así los cambios en el config se aplican
+    profile_exists && nmcli connection delete "$CON_NAME" >/dev/null
+    nmcli connection add type wifi ifname "$IFACE" con-name "$CON_NAME" \
+        autoconnect no ssid "$SSID" \
+        802-11-wireless.mode ap 802-11-wireless.band "$BAND" \
+        ipv4.method shared \
+        wifi-sec.key-mgmt wpa-psk wifi-sec.psk "$PASSWORD" >/dev/null
+
+    nmcli connection up "$CON_NAME" ifname "$IFACE" >/dev/null \
+        || die "no se pudo activar el hotspot (revisa: journalctl -u NetworkManager -n 30)"
+    echo "hotspot: encendido — SSID: $SSID"
+}
+
+do_off() {
+    if is_on; then
+        nmcli connection down "$CON_NAME" >/dev/null
+        echo "hotspot: apagado"
+    else
+        echo "hotspot: ya estaba apagado"
+    fi
+}
+
+do_info() {
+    ensure_config
+    echo "SSID:  $SSID"
+    echo "Clave: $PASSWORD"
+    if is_on; then
+        echo "Estado: on"
+        nmcli -g IP4.ADDRESS connection show "$CON_NAME" 2>/dev/null | sed 's/^/IP:    /' || true
+    else
+        echo "Estado: off"
+    fi
+}
+
+do_set_password() {
+    local pw="${1-}"
+    [[ -n "$pw" ]] || die "uso: hotspot set-password <clave>"
+    # WPA2: passphrase ASCII imprimible de 8 a 63 caracteres
+    ( export LC_ALL=C; [[ "$pw" =~ ^[\ -~]{8,63}$ ]] ) \
+        || die "la clave debe tener entre 8 y 63 caracteres ASCII imprimibles"
+
+    ensure_config
+    PASSWORD="$pw"
+    write_config
+
+    if is_on; then
+        # Reiniciar para que los clientes vuelvan a conectarse con la clave nueva
+        do_off
+        do_on
+    else
+        echo "hotspot: clave actualizada"
+    fi
+}
+
+case "${1:-}" in
+    set-password) do_set_password "${2-}" ;;
+    on)     do_on ;;
+    off)    do_off ;;
+    toggle) if is_on; then do_off; else do_on; fi ;;
+    status) if is_on; then echo on; else echo off; exit 1; fi ;;
+    info)   do_info ;;
+    *)      sed -n '2,/^$/p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
+esac

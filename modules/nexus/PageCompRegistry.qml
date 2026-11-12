@@ -64,6 +64,9 @@ QtObject {
                 Component {
                     SavedNetworksPage {}
                 }
+                Component {
+                    HotspotPage {} // idx 7: hotspot password
+                }
             }
         },
         Component {

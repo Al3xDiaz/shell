@@ -117,7 +117,6 @@ PageBase {
 
             Layout.topMargin: Tokens.spacing.large
             first: true
-            last: true
             text: qsTr("Hotspot")
             subtext: Hotspot.lastError.length > 0 ? Hotspot.lastError : Hotspot.enabled ? qsTr("%1 · password: %2").arg(Hotspot.ssid).arg(Hotspot.password) : qsTr("Share this PC's connection over Wi-Fi")
             font: Tokens.font.body.medium
@@ -133,6 +132,14 @@ PageBase {
 
                 target: Hotspot
             }
+        }
+
+        RowButton {
+            last: true
+            icon: "key"
+            text: qsTr("Hotspot password")
+            trailingIcon: "chevron_right"
+            onClicked: root.nState.openSubPage(7) // Hotspot password sub-page
         }
 
         // ---- VPN -------------------------------------------------------------

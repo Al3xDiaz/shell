@@ -113,6 +113,13 @@ git-ignored on purpose.
 **[`fork-config/starship.toml`](fork-config/starship.toml)** → real file:
 `~/.config/starship.toml` (prompt config).
 
+**[`fork-config/hotspot`](fork-config/hotspot)** → real file: `~/.local/bin/hotspot` (must be
+executable). The script behind the Wi-Fi hotspot toggle (`services/Hotspot.qml`): `hotspot
+on|off|toggle|status|info|set-password <pw>`, built on NetworkManager's shared mode. It needs
+`dnsmasq` installed (NM uses it for DHCP/DNS). Its own settings — SSID, password, band, iface —
+live in `~/.config/hotspot/config` (mode 600), which is created on first use with a random
+password and is **deliberately not backed up here** since it holds the password.
+
 ## Instalar en otro usuario
 
 1. Clonar la rama `custom` en el home del nuevo usuario:
@@ -133,6 +140,7 @@ git-ignored on purpose.
    cp $F/starship.toml ~/.config/
    cp $F/shell.json $F/shell-tokens.json $F/hypr-vars.lua ~/.config/caelestia/
    cp $F/hypr-variables.lua ~/.config/hypr/variables.lua
+   install -Dm755 $F/hotspot ~/.local/bin/hotspot   # needs: sudo pacman -S dnsmasq
    ```
 4. Opcional: `chsh -s /usr/bin/fish`.
 5. Recargar: `qs -c caelestia kill; caelestia shell -d` y `hyprctl reload`.
@@ -163,6 +171,13 @@ git-ignored on purpose.
         added wherever you want the button.
     -   `WallpaperCycle` is force-loaded in `modules/ServiceLoader.qml` so the timer runs even if
         the Nexus page is never opened.
+-   **Wi-Fi hotspot**: new `services/Hotspot.qml` singleton wrapping the external `hotspot`
+    script (see `fork-config/hotspot`; it is not part of the QML, so install it too). A
+    "Hotspot" switch was added to the bar's network popout (`modules/bar/popouts/Network.qml`)
+    and to Nexus → Network (`NetworkPage.qml`), plus a "Hotspot password" sub-page
+    (`modules/nexus/pages/network/HotspotPage.qml`, registered as sub-page index 7 of the
+    Network `StackPage` in `PageCompRegistry.qml`) to change the password from the UI. Changing
+    it while the hotspot is on restarts it.
 -   **Bar sizing**: all pixel values and ratios below were tuned by eye against this specific
     monitor setup — **AOC 27G2G4, 1920x1080@60Hz, 27" (600x340mm), Hyprland `scale: 1` (no
     fractional scaling), single monitor** (`hyprctl monitors` to re-check). On a different

@@ -16,7 +16,7 @@ Singleton {
     property string password: ""
     property string lastError: ""
 
-    readonly property bool busy: actionProc.running
+    readonly property bool busy: actionProc.running || pwProc.running
 
     // Emitted after every status check, so UI switches can resync with the
     // real state (e.g. when enabling failed and `enabled` didn't change).
@@ -32,6 +32,35 @@ Singleton {
         lastError = "";
         actionProc.command = [script, on ? "on" : "off"];
         actionProc.running = true;
+    }
+
+    // Changes the hotspot password (restarting the hotspot if it's on).
+    // Emits passwordResult(ok, error) when done.
+    function setPassword(newPassword: string): void {
+        if (busy)
+            return;
+        pwExitCode = -1;
+        pwStderr = null;
+        pwProc.command = [script, "set-password", newPassword];
+        pwProc.running = true;
+    }
+
+    signal passwordResult(bool ok, string error)
+
+    readonly property bool changingPassword: pwProc.running
+
+    property int pwExitCode: -1
+    property var pwStderr: null
+
+    // exited and stderr-finished can arrive in either order; finish on the second.
+    function finishPassword(): void {
+        if (pwExitCode < 0 || pwStderr === null)
+            return;
+        const ok = pwExitCode === 0;
+        passwordResult(ok, ok ? "" : pwStderr);
+        pwExitCode = -1;
+        pwStderr = null;
+        refresh();
     }
 
     function refresh(): void {
@@ -80,6 +109,21 @@ Singleton {
                     else if (line.startsWith("Clave:"))
                         root.password = line.slice(6).trim();
                 }
+            }
+        }
+    }
+
+    Process {
+        id: pwProc
+
+        onExited: exitCode => {
+            root.pwExitCode = exitCode;
+            root.finishPassword();
+        }
+        stderr: StdioCollector {
+            onStreamFinished: {
+                root.pwStderr = text.trim();
+                root.finishPassword();
             }
         }
     }
