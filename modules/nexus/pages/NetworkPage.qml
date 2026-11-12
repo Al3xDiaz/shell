@@ -136,10 +136,11 @@ PageBase {
 
         RowButton {
             last: true
-            icon: "key"
-            text: qsTr("Hotspot password")
+            icon: "tune"
+            text: qsTr("Hotspot settings")
+            subtext: qsTr("Network name and password")
             trailingIcon: "chevron_right"
-            onClicked: root.nState.openSubPage(7) // Hotspot password sub-page
+            onClicked: root.nState.openSubPage(7) // Hotspot settings sub-page
         }
 
         // ---- VPN -------------------------------------------------------------

@@ -16,7 +16,7 @@ Singleton {
     property string password: ""
     property string lastError: ""
 
-    readonly property bool busy: actionProc.running || pwProc.running
+    readonly property bool busy: actionProc.running || cfgProc.running
 
     // Emitted after every status check, so UI switches can resync with the
     // real state (e.g. when enabling failed and `enabled` didn't change).
@@ -34,32 +34,33 @@ Singleton {
         actionProc.running = true;
     }
 
-    // Changes the hotspot password (restarting the hotspot if it's on).
-    // Emits passwordResult(ok, error) when done.
-    function setPassword(newPassword: string): void {
+    // Changes the hotspot name and/or password in one go (restarting the
+    // hotspot once if it's on). An empty argument keeps the current value.
+    // Emits settingsResult(ok, error) when done.
+    function saveSettings(newSsid: string, newPassword: string): void {
         if (busy)
             return;
-        pwExitCode = -1;
-        pwStderr = null;
-        pwProc.command = [script, "set-password", newPassword];
-        pwProc.running = true;
+        cfgExitCode = -1;
+        cfgStderr = null;
+        cfgProc.command = [script, "configure", newSsid, newPassword];
+        cfgProc.running = true;
     }
 
-    signal passwordResult(bool ok, string error)
+    signal settingsResult(bool ok, string error)
 
-    readonly property bool changingPassword: pwProc.running
+    readonly property bool saving: cfgProc.running
 
-    property int pwExitCode: -1
-    property var pwStderr: null
+    property int cfgExitCode: -1
+    property var cfgStderr: null
 
     // exited and stderr-finished can arrive in either order; finish on the second.
-    function finishPassword(): void {
-        if (pwExitCode < 0 || pwStderr === null)
+    function finishSettings(): void {
+        if (cfgExitCode < 0 || cfgStderr === null)
             return;
-        const ok = pwExitCode === 0;
-        passwordResult(ok, ok ? "" : pwStderr);
-        pwExitCode = -1;
-        pwStderr = null;
+        const ok = cfgExitCode === 0;
+        settingsResult(ok, ok ? "" : cfgStderr);
+        cfgExitCode = -1;
+        cfgStderr = null;
         refresh();
     }
 
@@ -114,16 +115,16 @@ Singleton {
     }
 
     Process {
-        id: pwProc
+        id: cfgProc
 
         onExited: exitCode => {
-            root.pwExitCode = exitCode;
-            root.finishPassword();
+            root.cfgExitCode = exitCode;
+            root.finishSettings();
         }
         stderr: StdioCollector {
             onStreamFinished: {
-                root.pwStderr = text.trim();
-                root.finishPassword();
+                root.cfgStderr = text.trim();
+                root.finishSettings();
             }
         }
     }

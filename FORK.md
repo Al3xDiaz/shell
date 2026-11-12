@@ -42,6 +42,11 @@ qs -c caelestia kill
 caelestia shell -d
 ```
 
+> **Don't forget the external pieces.** The QML alone isn't the whole fork: the Wi-Fi hotspot
+> feature **requires** the `hotspot` script (`fork-config/hotspot` → `~/.local/bin/hotspot`)
+> and `dnsmasq`, and several other behaviours rely on the files in `fork-config/`. See "Local
+> config not tracked by git" and "Instalar en otro usuario" below.
+
 To also mirror pushes to GitLab:
 
 ```sh
@@ -114,9 +119,9 @@ git-ignored on purpose.
 `~/.config/starship.toml` (prompt config).
 
 **[`fork-config/hotspot`](fork-config/hotspot)** → real file: `~/.local/bin/hotspot` (must be
-executable). The script behind the Wi-Fi hotspot toggle (`services/Hotspot.qml`): `hotspot
-on|off|toggle|status|info|set-password <pw>`, built on NetworkManager's shared mode. It needs
-`dnsmasq` installed (NM uses it for DHCP/DNS). Its own settings — SSID, password, band, iface —
+executable). **Required** by the Wi-Fi hotspot feature (`services/Hotspot.qml` just calls it):
+`hotspot on|off|toggle|status|info|set-ssid|set-password|configure`, built on NetworkManager's
+shared mode. It needs `dnsmasq` installed (NM uses it for DHCP/DNS). Its own settings — SSID, password, band, iface —
 live in `~/.config/hotspot/config` (mode 600), which is created on first use with a random
 password and is **deliberately not backed up here** since it holds the password.
 
@@ -171,13 +176,22 @@ password and is **deliberately not backed up here** since it holds the password.
         added wherever you want the button.
     -   `WallpaperCycle` is force-loaded in `modules/ServiceLoader.qml` so the timer runs even if
         the Nexus page is never opened.
--   **Wi-Fi hotspot**: new `services/Hotspot.qml` singleton wrapping the external `hotspot`
-    script (see `fork-config/hotspot`; it is not part of the QML, so install it too). A
-    "Hotspot" switch was added to the bar's network popout (`modules/bar/popouts/Network.qml`)
-    and to Nexus → Network (`NetworkPage.qml`), plus a "Hotspot password" sub-page
+-   **Wi-Fi hotspot**: new `services/Hotspot.qml` singleton, plus a "Hotspot" switch in the
+    bar's network popout (`modules/bar/popouts/Network.qml`) and in Nexus → Network
+    (`NetworkPage.qml`), and a "Hotspot settings" sub-page
     (`modules/nexus/pages/network/HotspotPage.qml`, registered as sub-page index 7 of the
-    Network `StackPage` in `PageCompRegistry.qml`) to change the password from the UI. Changing
-    it while the hotspot is on restarts it.
+    Network `StackPage` in `PageCompRegistry.qml`) to change the network name and password
+    from the UI. Saving while the hotspot is on restarts it once.
+    -   **Requires the external `hotspot` script — this feature does nothing without it.** All
+        the QML does is call `~/.local/bin/hotspot` (`on`, `off`, `status`, `info`,
+        `configure`); the actual NetworkManager work lives in that script, which is **not**
+        part of the QML or the AUR package. A backup copy is in `fork-config/hotspot`; install
+        it with `install -Dm755 fork-config/hotspot ~/.local/bin/hotspot`. If it's missing the
+        switches will never turn on and no error is shown.
+    -   Also requires `nmcli` (NetworkManager, already needed by the shell) and `dnsmasq`
+        (`sudo pacman -S dnsmasq`; NM uses it to hand out IPs, without it clients connect but
+        get no address). The Wi-Fi adapter must support AP mode (`nmcli -f WIFI-PROPERTIES.AP
+        device show <iface>`).
 -   **Bar sizing**: all pixel values and ratios below were tuned by eye against this specific
     monitor setup — **AOC 27G2G4, 1920x1080@60Hz, 27" (600x340mm), Hyprland `scale: 1` (no
     fractional scaling), single monitor** (`hyprctl monitors` to re-check). On a different

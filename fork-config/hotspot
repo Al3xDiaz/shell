@@ -6,8 +6,10 @@
 #   hotspot toggle   alterna
 #   hotspot status   imprime "on" u "off" (exit 0 si está encendido)
 #   hotspot info     muestra SSID, clave e IP
-#   hotspot set-password <clave>   cambia la clave (8-63 caracteres ASCII);
-#                                  si está encendido lo reinicia
+#   hotspot set-ssid <nombre>      cambia el nombre de la red (hasta 32 bytes)
+#   hotspot set-password <clave>   cambia la clave (8-63 caracteres ASCII)
+#   hotspot configure <nombre> <clave>   cambia ambos ("" = dejar el actual)
+#                                  (si está encendido, lo reinicia una vez)
 #
 # Config opcional en ~/.config/hotspot/config:
 #   SSID="MiHotspot"
@@ -101,6 +103,9 @@ do_on() {
 do_off() {
     if is_on; then
         nmcli connection down "$CON_NAME" >/dev/null
+        # `down` retorna antes de que la conexión salga de la lista de activas;
+        # esperar para que un `on` inmediato (reinicio) no crea que sigue encendido.
+        for _ in {1..50}; do is_on || break; sleep 0.1; done
         echo "hotspot: apagado"
     else
         echo "hotspot: ya estaba apagado"
@@ -119,28 +124,47 @@ do_info() {
     fi
 }
 
-do_set_password() {
-    local pw="${1-}"
-    [[ -n "$pw" ]] || die "uso: hotspot set-password <clave>"
+# Cambia SSID y/o clave de una vez (argumento vacío = dejar el actual).
+# Si hay cambios y el hotspot está encendido, lo reinicia una sola vez.
+do_configure() {
+    local new_ssid="${1-}" new_pw="${2-}"
+    [[ -n "$new_ssid" || -n "$new_pw" ]] || die "uso: hotspot configure <ssid> <clave>"
+
+    # SSID: 1-32 bytes, sin caracteres de control (LC_ALL=C cuenta bytes)
+    if [[ -n "$new_ssid" ]]; then
+        ( export LC_ALL=C; (( ${#new_ssid} <= 32 )) && ! [[ "$new_ssid" =~ [[:cntrl:]] ]] ) \
+            || die "el nombre de red debe tener hasta 32 bytes y sin caracteres de control"
+    fi
     # WPA2: passphrase ASCII imprimible de 8 a 63 caracteres
-    ( export LC_ALL=C; [[ "$pw" =~ ^[\ -~]{8,63}$ ]] ) \
-        || die "la clave debe tener entre 8 y 63 caracteres ASCII imprimibles"
+    if [[ -n "$new_pw" ]]; then
+        ( export LC_ALL=C; [[ "$new_pw" =~ ^[\ -~]{8,63}$ ]] ) \
+            || die "la clave debe tener entre 8 y 63 caracteres ASCII imprimibles"
+    fi
 
     ensure_config
-    PASSWORD="$pw"
+    local old_ssid="$SSID" old_pw="$PASSWORD"
+    [[ -z "$new_ssid" ]] || SSID="$new_ssid"
+    [[ -z "$new_pw" ]] || PASSWORD="$new_pw"
+
+    if [[ "$SSID" == "$old_ssid" && "$PASSWORD" == "$old_pw" ]]; then
+        echo "hotspot: sin cambios"
+        return
+    fi
     write_config
 
     if is_on; then
-        # Reiniciar para que los clientes vuelvan a conectarse con la clave nueva
+        # Reiniciar para que los clientes vuelvan a conectarse con los datos nuevos
         do_off
         do_on
     else
-        echo "hotspot: clave actualizada"
+        echo "hotspot: configuración actualizada"
     fi
 }
 
 case "${1:-}" in
-    set-password) do_set_password "${2-}" ;;
+    configure)    do_configure "${2-}" "${3-}" ;;
+    set-password) do_configure "" "${2-}" ;;
+    set-ssid)     do_configure "${2-}" "" ;;
     on)     do_on ;;
     off)    do_off ;;
     toggle) if is_on; then do_off; else do_on; fi ;;
