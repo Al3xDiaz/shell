@@ -125,6 +125,18 @@ shared mode. It needs `dnsmasq` installed (NM uses it for DHCP/DNS). Its own set
 live in `~/.config/hotspot/config` (mode 600), which is created on first use with a random
 password and is **deliberately not backed up here** since it holds the password.
 
+**[`fork-config/90-hotspot-docker`](fork-config/90-hotspot-docker)** → real file (root-owned):
+`/etc/NetworkManager/dispatcher.d/90-hotspot-docker`. **Required if Docker is installed**, or
+the hotspot "works" but clients show *connected, no internet*: Docker sets the iptables
+`FORWARD` policy to `DROP`, which discards everything the hotspot forwards. This dispatcher
+script adds two `ACCEPT` rules for the hotspot interface to Docker's `DOCKER-USER` chain when
+the `Hotspot` connection comes up, and removes them when it goes down (nothing changes while
+the hotspot is off). The connection name must match `CON_NAME` in the `hotspot` script. Install
+it with `sudo install -Dm755 fork-config/90-hotspot-docker /etc/NetworkManager/dispatcher.d/`
+(the `NetworkManager-dispatcher` service must be enabled; on Arch it is). Restarting Docker
+while the hotspot is on recreates `DOCKER-USER` and drops the rules — toggle the hotspot off/on.
+Check with `sudo iptables -S DOCKER-USER`.
+
 ## Instalar en otro usuario
 
 1. Clonar la rama `custom` en el home del nuevo usuario:
@@ -146,6 +158,8 @@ password and is **deliberately not backed up here** since it holds the password.
    cp $F/shell.json $F/shell-tokens.json $F/hypr-vars.lua ~/.config/caelestia/
    cp $F/hypr-variables.lua ~/.config/hypr/variables.lua
    install -Dm755 $F/hotspot ~/.local/bin/hotspot   # needs: sudo pacman -S dnsmasq
+   # Only if Docker is installed (otherwise hotspot clients get "no internet"):
+   sudo install -Dm755 $F/90-hotspot-docker /etc/NetworkManager/dispatcher.d/90-hotspot-docker
    ```
 4. Opcional: `chsh -s /usr/bin/fish`.
 5. Recargar: `qs -c caelestia kill; caelestia shell -d` y `hyprctl reload`.
@@ -192,6 +206,8 @@ password and is **deliberately not backed up here** since it holds the password.
         (`sudo pacman -S dnsmasq`; NM uses it to hand out IPs, without it clients connect but
         get no address). The Wi-Fi adapter must support AP mode (`nmcli -f WIFI-PROPERTIES.AP
         device show <iface>`).
+    -   **With Docker installed**, also requires `fork-config/90-hotspot-docker` (see above);
+        without it clients connect and get an IP but have no internet.
 -   **Bar sizing**: all pixel values and ratios below were tuned by eye against this specific
     monitor setup — **AOC 27G2G4, 1920x1080@60Hz, 27" (600x340mm), Hyprland `scale: 1` (no
     fractional scaling), single monitor** (`hyprctl monitors` to re-check). On a different

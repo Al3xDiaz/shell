@@ -1,0 +1,46 @@
+#!/bin/sh
+# NetworkManager dispatcher: let hotspot clients reach the internet when Docker is installed.
+#
+# Docker sets the iptables FORWARD policy to DROP, which silently drops everything
+# NetworkManager's shared mode (the `hotspot` script) tries to forward: phones connect,
+# get an IP, and then show "connected, no internet". This adds ACCEPT rules to Docker's
+# DOCKER-USER chain (the place Docker reserves for user rules) while the hotspot is up,
+# and removes them when it goes down.
+#
+# Install (root):  install -Dm755 90-hotspot-docker /etc/NetworkManager/dispatcher.d/90-hotspot-docker
+# Needs: iptables (nft backend is fine), NetworkManager-dispatcher (D-Bus activated on Arch).
+
+IFACE="$1"
+ACTION="$2"
+CON_NAME="Hotspot"   # must match CON_NAME in ~/.local/bin/hotspot
+CHAIN="DOCKER-USER"
+
+[ "$CONNECTION_ID" = "$CON_NAME" ] || exit 0
+[ -n "$IFACE" ] || exit 0
+
+# No Docker chain -> FORWARD policy isn't Docker's, nothing to do.
+iptables -n -L "$CHAIN" >/dev/null 2>&1 || exit 0
+
+# Each rule is: "<position-flag-args>" tested with -C so it's added/removed idempotently.
+rule_out()  { echo "-i $IFACE -j ACCEPT"; }                                              # clients -> internet
+rule_back() { echo "-o $IFACE -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT"; }   # replies -> clients
+
+case "$ACTION" in
+    up)
+        for r in rule_out rule_back; do
+            # shellcheck disable=SC2046
+            iptables -C "$CHAIN" $($r) 2>/dev/null || iptables -I "$CHAIN" $($r)
+        done
+        logger -t hotspot-docker "allowed forwarding for $IFACE in $CHAIN"
+        ;;
+    down)
+        for r in rule_out rule_back; do
+            # shellcheck disable=SC2046
+            while iptables -C "$CHAIN" $($r) 2>/dev/null; do
+                iptables -D "$CHAIN" $($r) || break
+            done
+        done
+        logger -t hotspot-docker "removed forwarding rules for $IFACE from $CHAIN"
+        ;;
+esac
+exit 0
