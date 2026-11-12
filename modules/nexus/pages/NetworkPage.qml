@@ -111,6 +111,30 @@ PageBase {
             onClicked: root.nState.openSubPage(2) // Add network sub-page
         }
 
+        // ---- Hotspot ---------------------------------------------------------
+        ToggleRow {
+            id: hotspotRow
+
+            Layout.topMargin: Tokens.spacing.large
+            first: true
+            last: true
+            text: qsTr("Hotspot")
+            subtext: Hotspot.lastError.length > 0 ? Hotspot.lastError : Hotspot.enabled ? qsTr("%1 · password: %2").arg(Hotspot.ssid).arg(Hotspot.password) : qsTr("Share this PC's connection over Wi-Fi")
+            font: Tokens.font.body.medium
+            horizontalPadding: Tokens.padding.largeIncreased
+            checked: Hotspot.enabled
+            disabled: Hotspot.busy
+            onToggled: Hotspot.set(checked)
+
+            Connections {
+                function onRefreshed(): void {
+                    hotspotRow.checked = Hotspot.enabled;
+                }
+
+                target: Hotspot
+            }
+        }
+
         // ---- VPN -------------------------------------------------------------
         ToggleRow {
             Layout.topMargin: Tokens.spacing.large

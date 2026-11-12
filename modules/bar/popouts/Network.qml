@@ -40,6 +40,36 @@ ColumnLayout {
         toggle.onToggled: Nmcli.enableWifi(checked)
     }
 
+    Toggle {
+        id: hotspotToggle
+
+        visible: root.view === "wireless"
+        Layout.preferredHeight: visible ? implicitHeight : 0
+        label: qsTr("Hotspot")
+        checked: Hotspot.enabled
+        toggle.enabled: !Hotspot.busy
+        toggle.onToggled: Hotspot.set(checked)
+    }
+
+    StyledText {
+        visible: root.view === "wireless" && (Hotspot.enabled || Hotspot.lastError.length > 0)
+        Layout.preferredHeight: visible ? implicitHeight : 0
+        Layout.fillWidth: true
+        Layout.rightMargin: Tokens.padding.extraSmall
+        text: Hotspot.lastError.length > 0 ? Hotspot.lastError : qsTr("%1 · %2").arg(Hotspot.ssid).arg(Hotspot.password)
+        color: Hotspot.lastError.length > 0 ? Colours.palette.m3error : Colours.palette.m3onSurfaceVariant
+        font: Tokens.font.label.small
+        elide: Text.ElideRight
+    }
+
+    Connections {
+        function onRefreshed(): void {
+            hotspotToggle.checked = Hotspot.enabled;
+        }
+
+        target: Hotspot
+    }
+
     StyledText {
         visible: root.view === "wireless"
         Layout.preferredHeight: visible ? implicitHeight : 0
